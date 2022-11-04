@@ -5,11 +5,17 @@ This sample here demonstrates how to integrate with hippo-aggregator on-chain
 Sample code at end of `typescript/src/cli.ts`:
 
 ```typescript
-const testSwap = async(symbolX: string, symbolY: string, xInAmt: string, targetAddress: string) => {
-  const {client, account} = readConfig(program);
-  const agg = await TradeAggregator.create(client);
-  const xInfo = agg.registryClient.getCoinInfoBySymbol(symbolX);
-  const yInfo = agg.registryClient.getCoinInfoBySymbol(symbolY);
+const testSwap = async (
+  symbolX: string,
+  symbolY: string,
+  xInAmt: string,
+  targetAddress: string
+) => {
+  const { client, account } = readConfig(program);
+  const agg = new TradeAggregator(client);
+  await agg.coinListClient.update(client); // update additional tokens
+  const xInfo = agg.coinListClient.getCoinInfoBySymbol(symbolX)[0];
+  const yInfo = agg.coinListClient.getCoinInfoBySymbol(symbolY)[0];
   const quote = await agg.getBestQuote(parseFloat(xInAmt), xInfo, yInfo);
   if (!quote) {
     console.log(`No quote from ${symbolX} to ${symbolY}`);
@@ -33,8 +39,48 @@ const testSwap = async(symbolX: string, symbolY: string, xInAmt: string, targetA
   );
 
   await sendPayloadTxAndLog(client, account, payload);
-}
+};
 
+const testSwapApi = async (
+  symbolX: string,
+  symbolY: string,
+  xInAmt: string,
+  targetAddress: string,
+  isReloadPools: boolean,
+  slipTolerance: number,
+  options = {}
+) => {
+  const { client, account } = readConfig(program);
+  const agg = new TradeAggregator(client);
+  await agg.coinListClient.update(client);
+  const xInfo = agg.coinListClient.getCoinInfoBySymbol(symbolX)[0];
+  const yInfo = agg.coinListClient.getCoinInfoBySymbol(symbolY)[0];
+  const inputAmt = parseFloat(xInAmt);
+  const result = await agg.requestQuotesViaAPI(
+    inputAmt,
+    xInfo,
+    yInfo,
+    isReloadPools
+  );
+  if (result.allRoutesCount === 0) {
+    console.log(`No quote from ${symbolX} to ${symbolY}`);
+    return;
+  }
+
+  const routeSelected = result.routes[0];
+  // For wallets submitting transactions
+  const input = routeSelected.quote.inputUiAmt;
+  const minOut = routeSelected.quote.outputUiAmt * (1 - slipTolerance / 100);
+
+  const payload = quoteSelected.route.makePayload(input, minOut, true);
+
+  const result = await signAndSubmitTransaction(
+    payload as Types.TransactionPayload_EntryFunctionPayload,
+    options
+  );
+
+  // ...
+};
 ```
 
 The sample TS code invokes an onchain function, which uses the aggregator to perform a swap, and then deposit the output
