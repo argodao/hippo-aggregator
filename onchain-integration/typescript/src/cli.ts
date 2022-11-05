@@ -1525,10 +1525,12 @@ const testSwapLocal = async (
 ) => {
   const { client, account } = readConfig(program);
   const agg = new TradeAggregator(client);
+  console.log("Loading coin list...");
   await agg.coinListClient.update(client);
   const xInfo = agg.coinListClient.getCoinInfoBySymbol(symbolX)[0];
   const yInfo = agg.coinListClient.getCoinInfoBySymbol(symbolY)[0];
   const inputAmt = parseFloat(xInAmt);
+  console.log("Loading quotes...");
   const quotes = await agg.getQuotes(inputAmt, xInfo, yInfo);
   if (quotes.length === 0) {
     console.log(`No quote from ${symbolX} to ${symbolY}`);
@@ -1553,6 +1555,7 @@ const testSwapLocal = async (
     params.types
   );
 
+  console.log("Sending tx...");
   await sendPayloadTxAndLog(client, account, payload);
 };
 
@@ -1572,11 +1575,13 @@ const testSwapApi = async (
 ) => {
   const { client, account } = readConfig(program);
   const agg = new TradeAggregator(client);
+  console.log("Loading coin list...");
   await agg.coinListClient.update(client);
   const xInfo = agg.coinListClient.getCoinInfoBySymbol(symbolX)[0];
   const yInfo = agg.coinListClient.getCoinInfoBySymbol(symbolY)[0];
   const inputAmt = parseFloat(xInAmt);
   const isReload = true;
+  console.log("Fetching quotes...");
   const result = await agg.requestQuotesViaAPI(
     inputAmt,
     xInfo,
@@ -1587,6 +1592,7 @@ const testSwapApi = async (
     console.log(`No quote from ${symbolX} to ${symbolY}`);
     return;
   }
+  console.log(`Fetched ${result.allRoutesCount} quotes`);
 
   const routeSelected = result.routes[0];
   const params = routeSelected.route.getSwapParams(inputAmt, 0);
@@ -1606,6 +1612,7 @@ const testSwapApi = async (
     params.types
   );
 
+  console.log("Sending tx...");
   await sendPayloadTxAndLog(client, account, payload);
 };
 

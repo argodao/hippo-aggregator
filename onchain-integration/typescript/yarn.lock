@@ -549,10 +549,10 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@manahippo/coin-list@1.0.17":
-  version "1.0.17"
-  resolved "https://registry.yarnpkg.com/@manahippo/coin-list/-/coin-list-1.0.17.tgz#baeb42730fcbf803beae2586095a39a4d50c3a25"
-  integrity sha512-FmV+Am7FxOLWaOfsEXvwQDJxC5tb9tRIlnwgMrP5E0h0T+p+apB2xOmt363zH78ZU9ISUMkFnhZ699+30SlmbA==
+"@manahippo/coin-list@1.0.20":
+  version "1.0.20"
+  resolved "https://registry.yarnpkg.com/@manahippo/coin-list/-/coin-list-1.0.20.tgz#b3f4b85b6fc942641128c768cf7fe45e7025efa0"
+  integrity sha512-RjfxlDZqd7p6F6bE7agh8XCLxzgkwOQc9xfEPWvdtMOVDLuTbyg14GJx689mtsMLg+n5n1jai0QLjyj7OntgzA==
   dependencies:
     "@manahippo/move-to-ts" "0.4.3"
     aptos "1.3.15"
@@ -560,12 +560,12 @@
     commander "^9.3.0"
     yaml "^2.1.1"
 
-"@manahippo/hippo-sdk@2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@manahippo/hippo-sdk/-/hippo-sdk-2.3.0.tgz#03adee3db1c55b0e807727521604e973f233ca15"
-  integrity sha512-fo9B38TWjK2tNaDBVvtZMI+/zKz4XkYSEdH9hLMYx1+BcESxdE8Zdcu00EQ8Nqc/N7IZjoFxob1Y4lK1UG5ZsA==
+"@manahippo/hippo-sdk@2.3.1":
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/@manahippo/hippo-sdk/-/hippo-sdk-2.3.1.tgz#73f8fa561d86eba26fdb5c07e88f5c278ff395fd"
+  integrity sha512-75DjXhJkHIKbyZyWElX9YXY1Q4GkH1mpyZwRa2DgQFTu1NVp2mwfXEG1OJ4T+8gX8N8A1GeDysIMh+kxt4eZHw==
   dependencies:
-    "@manahippo/coin-list" "1.0.17"
+    "@manahippo/coin-list" "1.0.20"
     "@manahippo/move-to-ts" "0.4.3"
     aptos "1.3.15"
     commander "^9.3.0"

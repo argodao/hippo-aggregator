@@ -1,3 +1,4 @@
+/*
 #[test_only]
 module hippo_aggregator::econia {
     use std::signer::address_of;
@@ -275,3 +276,5 @@ module hippo_aggregator::econia {
         assert!(coin::balance<BTC>(address_of(swap_user)) > 0, 0);
     }
 }
+
+*/
