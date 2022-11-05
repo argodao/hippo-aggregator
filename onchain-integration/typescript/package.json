@@ -1,16 +1,17 @@
-
 {
   "name": "samle",
   "version": "0.0.1",
   "scripts": {
     "build": "rm -rf dist; tsc -p tsconfig.json",
     "cli": "node dist/cli.js",
-
     "test": "jest"
   },
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
-  "files": [ "src", "dist" ],
+  "files": [
+    "src",
+    "dist"
+  ],
   "devDependencies": {
     "@types/jest": "^27.4.1",
     "@types/node": "^17.0.31",
@@ -31,5 +32,8 @@
     "yaml": "^2.1.1",
     "@manahippo/hippo-sdk": "2.3.0",
     "@manahippo/move-to-ts": "^0.4.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
