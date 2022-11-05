@@ -94,7 +94,56 @@ module liquidswap::stable_curve {
 
         u256::as_u128(r)
     }
+    /// Get coin amount in by passing amount out, returns amount in (we don't take fees into account here).
+    /// It probably would eat a lot of gas and better to do it offchain (on your frontend or whatever),
+    /// yet if no other way and need blockchain computation we left it here.
+    /// * `coin_out` - amount of coin you want to get.
+    /// * `scale_in` - 10 pow by coin decimals you want to swap.
+    /// * `scale_out` - 10 pow by coin decimals you want to get.
+    /// * `reserve_in` - reserves of coin to swap.
+    /// * `reserve_out` - reserves of coin to get in exchange.
+    public fun coin_in(coin_out: u128, scale_out: u64, scale_in: u64, reserve_out: u128, reserve_in: u128): u128 {
+        let u2561e8 = u256::from_u128(ONE_E_8);
 
+        let xy = lp_value(reserve_in, scale_in, reserve_out, scale_out);
+
+        let reserve_in_u256 = u256::div(
+            u256::mul(
+                u256::from_u128(reserve_in),
+                u2561e8,
+            ),
+            u256::from_u64(scale_in),
+        );
+        let reserve_out_u256 = u256::div(
+            u256::mul(
+                u256::from_u128(reserve_out),
+                u2561e8,
+            ),
+            u256::from_u64(scale_out),
+        );
+        let amount_out = u256::div(
+            u256::mul(
+                u256::from_u128(coin_out),
+                u2561e8
+            ),
+            u256::from_u64(scale_out)
+        );
+
+        let total_reserve = u256::sub(reserve_out_u256, amount_out);
+        let x = u256::sub(
+            get_y(total_reserve, xy, reserve_in_u256),
+            reserve_in_u256,
+        );
+        let r = u256::div(
+            u256::mul(
+                x,
+                u256::from_u64(scale_in),
+            ),
+            u2561e8
+        );
+
+        u256::as_u128(r)
+    }
     /// Trying to find suitable `y` value.
     /// * `x0` - total reserve x (include `coin_in`) with transformed decimals.
     /// * `xy` - lp value (see `lp_value` func).

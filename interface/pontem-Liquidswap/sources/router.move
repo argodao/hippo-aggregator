@@ -45,6 +45,26 @@ module liquidswap::router {
             scale_y,
         )
     }
+
+    /// Get amount in for `amount_out` of X coins (see generic).
+    /// So if Coins::USDT is X and Coins::USDC is Y, you pass how much USDC you want to get and
+    /// it returns amount of USDT you have to swap (include fees).
+    /// !Important!: This function can eat a lot of gas if you querying it for stable curve pool, so be aware.
+    /// We recommend to do implement such kind of logic offchain.
+    /// * `amount_x` - amount to swap.
+    /// Returns amount of `X` coins needed.
+    public fun get_amount_in<X, Y, Curve>(amount_out: u64): u64 {
+        let (reserve_x, reserve_y) = get_reserves_size<X, Y, Curve>();
+        let (scale_x, scale_y) = get_decimals_scales<X, Y, Curve>();
+        get_coin_in_with_fees<X, Y, Curve>(
+            amount_out,
+            reserve_y,
+            reserve_x,
+            scale_y,
+            scale_x,
+        )
+    }
+
     /// Get reserves of liquidity pool (`X` and `Y`).
     /// Returns current reserves (`X`, `Y`).
     public fun get_reserves_size<X, Y, Curve>(): (u64, u64) {
@@ -107,6 +127,59 @@ module liquidswap::router {
             math::mul_div(coin_in_val_after_fees,
                 reserve_out,
                 new_reserve_in)
+        } else {
+            abort ERR_UNREACHABLE
+        }
+    }
+    /// Get coin amount in by amount out. Pass all data manually.
+    /// * `coin_out` - exactly amount of coins we want to get.
+    /// * `reserve_out` - reserves of coin we are going to get.
+    /// * `reserve_in` - reserves of coin we are going to swap.
+    /// * `scale_in` - 10 pow by decimals amount of coin we swap.
+    /// * `scale_out` - 10 pow by decimals amount of coin we get.
+    ///
+    /// This computation is a reverse of get_coin_out formula for uncorrelated assets:
+    ///     y = x * (fee_scale - fee_pct) * ry / (rx + x * (fee_scale - fee_pct))
+    ///
+    /// solving it for x returns this formula:
+    ///     x = y * rx / ((ry - y) * (fee_scale - fee_pct)) or
+    ///     x = y * rx * (fee_scale) / ((ry - y) * (fee_scale - fee_pct)) which implemented in this function
+    ///
+    ///  For stable curve math described in `coin_in` func into `../libs/StableCurve.move`.
+    ///
+    /// Returns amount of coins needed for swap.
+    fun get_coin_in_with_fees<X, Y, Curve>(
+        coin_out: u64,
+        reserve_out: u64,
+        reserve_in: u64,
+        scale_out: u64,
+        scale_in: u64,
+    ): u64 {
+        let (fee_pct, fee_scale) = get_fees_config<X, Y, Curve>();
+        let fee_multiplier = fee_scale - fee_pct;
+
+        if (curves::is_stable<Curve>()) {
+            // !!!FOR AUDITOR!!!
+            // Double check it.
+            let coin_in = (stable_curve::coin_in(
+                (coin_out as u128),
+                scale_out,
+                scale_in,
+                (reserve_out as u128),
+                (reserve_in as u128),
+            ) as u64) + 1;
+
+            (coin_in * fee_scale / fee_multiplier) + 1
+        } else if (curves::is_uncorrelated<Curve>()) {
+            let new_reserves_out = (reserve_out - coin_out) * fee_multiplier;
+
+            // coin_out * reserve_in * fee_scale / new reserves out
+            let coin_in = math::mul_div(
+                coin_out, // y
+                reserve_in * fee_scale,
+                new_reserves_out
+            ) + 1;
+            coin_in
         } else {
             abort ERR_UNREACHABLE
         }
