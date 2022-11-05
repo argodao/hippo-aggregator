@@ -41,4 +41,20 @@ module SwapDeployer::AnimeSwapPoolV1Library {
         let amount_out = numerator / denominator;
         (amount_out as u64)
     }
+
+    /// given an output amount of an asset and pair reserves, returns a required input amount of the other asset
+    public fun get_amount_in(
+        amount_out: u64,
+        reserve_in: u64,
+        reserve_out: u64,
+        swap_fee: u64
+    ): u64 {
+        assert!(amount_out > 0, ERR_INSUFFICIENT_OUTPUT_AMOUNT);
+        assert!(reserve_in > 0 && reserve_out > 0, ERR_INSUFFICIENT_LIQUIDITY);
+        let numerator = (reserve_in as u128) * (amount_out as u128) * 10000;
+        let denominator = ((reserve_out - amount_out) as u128) * ((10000 - swap_fee) as u128);
+        let amount_in = numerator / denominator + 1;
+        (amount_in as u64)
+    }
+
 }
